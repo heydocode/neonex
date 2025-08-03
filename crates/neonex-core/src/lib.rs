@@ -1,20 +1,20 @@
-use std::marker::PhantomData;
+use std::{io::Result, marker::PhantomData};
 
-use bevy::
-    app::{App, AppExit}
-;
+use bevy::app::{App, AppExit};
+use neonex_platform::{NeoNexPlatform, NeoNexStartupConfigSet};
+use serde::{Deserialize, Serialize};
 
-/// At launch, before that NeoNex starts its instance, it retrieves a Startup Config,
-/// located differently in each platform (Desktop, Mobile, Web).
-/// 
-/// Following this Startup Config, the app can be customized even more, while remaining
-/// only one binary, and not requiring a reboot.
-pub struct NeoNexStartupConfigSet {
-    pub values: Vec<NeoNexStartupConfig>
-}
-
-pub enum NeoNexStartupConfig {
-    NativeTerminal(bool)
+cfg_if::cfg_if! {
+    if #[cfg(feature = "desktop")] {
+        use neonex_desktop::DesktopPlatform as ActivePlatform;
+    } else if #[cfg(feature = "mobile")] {
+        use neonex_mobile::MobilePlatform as ActivePlatform;
+    } else if #[cfg(feature = "web")] {
+        use neonex_web::WebPlatform as ActivePlatform;
+    }
+    else {
+        compile_error!("One of the three main platform features must be set!");
+    }
 }
 
 /// `NeoNexConfig` is a trait, containing all of the NeoNex static customizations.
@@ -80,7 +80,11 @@ impl<CONFIG: NeoNexConfig> NeoNexInstance<CONFIG> {
     pub fn new() -> Self {
         let mut app = App::new();
 
+        let startup_config_set = <ActivePlatform as NeoNexPlatform>::retrieve_startup_config();
+        // Insert the resource into bevy_ECS in order to modify it, and save the modified one into bevy when needed.
+        app.insert_resource(startup_config_set.clone());
 
+        <ActivePlatform as NeoNexPlatform>::setup_bevy(&mut app, startup_config_set);
 
         Self {
             _marker: PhantomData::<CONFIG>,
@@ -100,21 +104,3 @@ impl<CONFIG: NeoNexConfig> NeoNexInstance<CONFIG> {
 pub struct DefaultNeoNexConfig;
 
 impl NeoNexConfig for DefaultNeoNexConfig {}
-
-/// Platform-specific data, that make cross-platform 
-pub trait NeoNexPlatformSpecific {
-    /// Advices what kind of terminal to init:
-    /// - ADVICE_NATIVE_TERMINAL: true => If the binary hasn't been executed with arguments that require the app to init a virtual terminal, a native terminal tries to init, on failure, the app restarts and inits virtual terminal (via launching the binary again but with an argument to init a virtual terminal).
-    /// - ADVICE_NATIVE_TERMINAL: false => A window inits, with a virtual terminal in it.
-    /// 
-    /// This advice is platform-specific, as only desktop can init in a terminal.
-    /// Also, via arguments, the user can define to init a virtual, or a native terminal.
-    /// If the constant value is false and an argument requires NeoNex to init a native terminal, the app inits a virtual terminal
-    /// and notices the user on startup that his requirement haven't been executed, with a descriptive message.
-    const ADVICE_NATIVE_TERMINAL: bool;
-
-    /// Required setup:
-    /// - Init the terminal (whether native or virtual)
-    fn setup_bevy(app: &mut App, startup_config_set: NeoNexStartupConfigSet);
-    fn retrieve_startup_config() -> NeoNexStartupConfigSet;
-}

@@ -5,7 +5,7 @@ edition = "2024"
 
 [workspace]
 members = [
-    "crates/neonex-core",
+    "crates/neonex-core", "crates/neonex-desktop", "crates/neonex-macros", "crates/neonex-mobile", "crates/neonex-platform", "crates/neonex-terminal", "crates/neonex-web",
 ]
 
 [dependencies]
