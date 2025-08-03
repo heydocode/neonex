@@ -1,0 +1,10 @@
+[package]
+name = "neonex-mobile"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy = "0.16.1"
+serde_json = "1.0.142"
+neonex-platform = { path = "../neonex-platform" }
+cfg-if = "1.0.1"
