@@ -22,4 +22,5 @@ If you want to contribute, that's not (yet) the right time: I have to build the 
 - [ ] Publish drafts, design documents, graphs
 - [ ] Implement Github CI and automate information sources (e.g. dependency graphs, with detailed feature-gates and targets)
 - [ ] Publish neonex lib with all of its descendents (e.g. neonex-core)
+- [ ] Publish neonex binaries (basically default neonex impl everywhere)
 - [ ] Web page about NeoNex

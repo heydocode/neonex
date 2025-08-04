@@ -5,8 +5,15 @@ use std::{
     path::PathBuf,
 };
 
-use bevy::app::App;
-use neonex_platform::{NeoNexPlatform, NeoNexStartupConfigSet};
+use bevy::prelude::PluginGroup;
+use bevy::{
+    DefaultPlugins,
+    app::App,
+    render::texture::ImagePlugin,
+    utils::default,
+    window::{Window, WindowPlugin},
+};
+use neonex_platform::{NeoNexConfig, NeoNexPlatform, NeoNexStartupConfigSet};
 
 pub struct DesktopPlatform;
 
@@ -25,13 +32,26 @@ impl NeoNexPlatform for DesktopPlatform {
 
     const ADVICE_NATIVE_TERMINAL: bool = true;
 
-    fn setup_bevy(app: &mut App, startup_config_set: neonex_platform::NeoNexStartupConfigSet) {
-        // TODO
+    fn setup_bevy<CONFIG: NeoNexConfig>(
+        app: &mut App,
+        startup_config_set: neonex_platform::NeoNexStartupConfigSet,
+    ) {
+        app.add_plugins(
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: CONFIG::WINDOW_NAME.to_string(),
+                        ..default()
+                    }),
+                    ..default()
+                }),
+        );
     }
 
     fn retrieve_startup_config_key() -> Self::StartupConfigRetrieveKeyType {
         let mut path = temp_dir();
-        path.push(Self::STARTUP_CONFIG_RANDOM_SEED.to_string());
+        path.push(Self::STARTUP_CONFIG_RANDOM_KEY.to_string());
         path
     }
 
@@ -46,13 +66,18 @@ impl NeoNexPlatform for DesktopPlatform {
         if let Ok(output) = serde_json::from_str(&buf) {
             return output;
         } else {
-            return NeoNexStartupConfigSet { values: Vec::new() };
+            if buf.len() > 0 {
+                file.set_len(0).expect("Unable to clear the file once the data has been corrupted");
+            }
+            return NeoNexStartupConfigSet::default();
         }
     }
 
+    type UpdateResult = serde_json::Result<()>;
+
     fn update_startup_config(
         startup_config_set: neonex_platform::NeoNexStartupConfigSet,
-    ) -> serde_json::Result<()> {
+    ) -> Self::UpdateResult {
         let path = Self::retrieve_startup_config_key();
         let mut options = OpenOptions::new();
         options.create(true).write(true);

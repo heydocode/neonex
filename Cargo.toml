@@ -5,8 +5,21 @@ edition = "2024"
 
 [workspace]
 members = [
-    "crates/neonex-core", "crates/neonex-desktop", "crates/neonex-macros", "crates/neonex-mobile", "crates/neonex-platform", "crates/neonex-terminal", "crates/neonex-web",
+    "crates/neonex-core",
+    "crates/neonex-desktop",
+    "crates/neonex-macros",
+    "crates/neonex-mobile", "crates/neonex-mockplatform",
+    "crates/neonex-platform",
+    "crates/neonex-terminal",
+    "crates/neonex-web",
 ]
 
+[features]
+desktop = ["neonex-core/desktop"]
+mobile = ["neonex-core/mobile"]
+web = ["neonex-core/web"]
+
 [dependencies]
-neonex-core ={ path = "crates/neonex-core"}
+neonex-core = { path = "crates/neonex-core" }
+neonex-platform = { path = "crates/neonex-platform" }
+bevy = "0.16.1"

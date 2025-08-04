@@ -5,8 +5,14 @@ use std::{
     path::PathBuf,
 };
 
-use bevy::app::App;
-use neonex_platform::{NeoNexPlatform, NeoNexStartupConfigSet};
+use bevy::prelude::PluginGroup;
+use bevy::{
+    DefaultPlugins,
+    app::App,
+    utils::default,
+    window::{MonitorSelection, Window, WindowMode, WindowPlugin},
+};
+use neonex_platform::{NeoNexConfig, NeoNexPlatform, NeoNexStartupConfigSet};
 
 pub struct MobilePlatform;
 
@@ -25,13 +31,34 @@ impl NeoNexPlatform for MobilePlatform {
 
     const ADVICE_NATIVE_TERMINAL: bool = false;
 
-    fn setup_bevy(app: &mut App, startup_config_set: neonex_platform::NeoNexStartupConfigSet) {
-        // TODO
+    fn setup_bevy<CONFIG: NeoNexConfig>(
+        app: &mut App,
+        startup_config_set: neonex_platform::NeoNexStartupConfigSet,
+    ) {
+        app.add_plugins(DefaultPlugins.set(WindowPlugin {
+            primary_window: Some(Window {
+                title: CONFIG::WINDOW_NAME.to_string(),
+                resizable: false,
+                mode: WindowMode::BorderlessFullscreen(MonitorSelection::Primary),
+                // on iOS, gestures must be enabled.
+                // This doesn't work on Android
+                #[cfg(target_os = "ios")]
+                recognize_rotation_gesture: true,
+                // Only has an effect on iOS
+                #[cfg(target_os = "ios")]
+                prefers_home_indicator_hidden: true,
+                // Only has an effect on iOS
+                #[cfg(target_os = "ios")]
+                prefers_status_bar_hidden: true,
+                ..default()
+            }),
+            ..default()
+        }));
     }
 
     fn retrieve_startup_config_key() -> Self::StartupConfigRetrieveKeyType {
         let mut path = temp_dir();
-        path.push(Self::STARTUP_CONFIG_RANDOM_SEED.to_string());
+        path.push(Self::STARTUP_CONFIG_RANDOM_KEY.to_string());
         path
     }
 
@@ -46,9 +73,14 @@ impl NeoNexPlatform for MobilePlatform {
         if let Ok(output) = serde_json::from_str(&buf) {
             return output;
         } else {
-            return NeoNexStartupConfigSet { values: Vec::new() };
+            if buf.len() > 0 {
+                file.set_len(0).expect("Unable to clear the file once the data has been corrupted");
+            }
+            return NeoNexStartupConfigSet::default();
         }
     }
+
+    type UpdateResult = serde_json::Result<()>;
 
     fn update_startup_config(
         startup_config_set: neonex_platform::NeoNexStartupConfigSet,
