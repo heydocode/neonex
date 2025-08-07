@@ -16,7 +16,7 @@ If you want to contribute, that's not (yet) the right time: I have to build the 
 - [ ] SSM Full implementation
 - [ ] Minimal dynamic terminal support (fork/contribute to [bevy_ratatui](https://github.com/cxreiff/bevy_ratatui))
 - [ ] pluggable plugins (no priority, but trivial)
-- [ ] Finish StartupConfigSet (SCS) implementations
+- [x] Finish StartupConfigSet (SCS) implementations
 - [ ] Implement logic for `neonex-teminal`: ASCII art, animations, custom GUI, ...
 - [ ] Document everything in-code
 - [ ] Publish drafts, design documents, graphs
