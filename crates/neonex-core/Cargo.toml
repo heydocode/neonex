@@ -7,12 +7,21 @@ edition = "2024"
 desktop = ["dep:neonex-desktop"]
 mobile = ["dep:neonex-mobile"]
 web = ["dep:neonex-web"]
+uefi = ["dep:neonex-uefi"]
+embedded = ["dep:neonex-embedded"]
+
+desktop-hybrid-contexts = ["neonex-desktop?/hybrid-contexts"]
+desktop-softatui-context = ["neonex-desktop?/softatui"]
+desktop-crossterm-context = ["neonex-desktop?/crossterm"]
 
 [dependencies]
 bevy = "0.16.1"
+cfg-if = "1.0.1"
+neonex-platform ={ path = "../neonex-platform"}
 neonex-desktop = { path = "../neonex-desktop", optional = true }
 neonex-mobile = { path = "../neonex-mobile", optional = true }
 neonex-web = { path = "../neonex-web", optional = true }
-neonex-mockplatform = {path = "../neonex-mockplatform"}
-neonex-platform = { path = "../neonex-platform"}
-cfg-if = "1.0.1"
+neonex-uefi = { path = "../neonex-uefi", optional = true }
+neonex-embedded = { path = "../neonex-embedded", optional = true }
+neonex-mockplatform = { path = "../neonex-mockplatform" }
+neonex-shared = {path = "../neonex-shared"}

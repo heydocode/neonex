@@ -1,15 +1,14 @@
 [package]
-name = "neonex-web"
+name = "neonex-uefi"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+bevy = {version = "0.16.1", default-features = false}
 neonex-platform = { path = "../neonex-platform" }
-cfg-if = "1.0.1"
-bevy = {version = "0.16.1", features = ["webgl2"]}
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
-gloo-storage = "0.3.0"
+cfg-if = "1.0.1"
 ratatui = { version = "0.29.0", default-features = false }
-neonex-terminal = { path = "../neonex-terminal" }
-soft_ratatui = { version = "0.0.8" }
+uefi = { version = "0.35.0", features = ["alloc"] }
+neonex-terminal = {path = "../neonex-terminal"}
 neonex-shared = {path = "../neonex-shared"}

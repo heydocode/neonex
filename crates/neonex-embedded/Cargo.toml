@@ -1,15 +1,11 @@
 [package]
-name = "neonex-web"
+name = "neonex-embedded"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+bevy = "0.16.1"
 neonex-platform = { path = "../neonex-platform" }
-cfg-if = "1.0.1"
-bevy = {version = "0.16.1", features = ["webgl2"]}
-serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
-gloo-storage = "0.3.0"
 ratatui = { version = "0.29.0", default-features = false }
 neonex-terminal = { path = "../neonex-terminal" }
-soft_ratatui = { version = "0.0.8" }
 neonex-shared = {path = "../neonex-shared"}

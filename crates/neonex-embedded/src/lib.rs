@@ -4,10 +4,12 @@ use neonex_shared::NeoNexStartupConfigSet;
 use neonex_terminal::TerminalContext;
 use ratatui::{backend::TestBackend, prelude::Backend, Terminal};
 
-pub struct MockPlatform;
+pub struct EmbeddedPlatform;
 
-impl NeoNexPlatform for MockPlatform {
-    const PLATFORM: &'static str = "MockPlatform // Should never be chosen at runtime";
+impl NeoNexPlatform for EmbeddedPlatform {
+    const PLATFORM: &'static str = "Embedded";
+
+    // TODO - Implement Embedded Platform using mousefood
 
     type RatatuiContextBackend = TestBackend;
 
