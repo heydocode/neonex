@@ -1,11 +1,5 @@
 use bevy::{
-    DefaultPlugins,
-    app::{App, PluginGroup, Update},
-    ecs::{error::BevyError, system::Res},
-    log::{info, warn},
-    prelude::{Deref, DerefMut},
-    utils::default,
-    window::{Window, WindowPlugin},
+    app::{App, PluginGroup, Update}, ecs::{error::BevyError, system::Res}, log::{info, warn}, prelude::{Deref, DerefMut}, render::texture::ImagePlugin, utils::default, window::{Window, WindowPlugin}, DefaultPlugins
 };
 use gloo_storage::{LocalStorage, Storage};
 use neonex_platform::{NeoNexConfig, NeoNexPlatform};
@@ -14,6 +8,8 @@ use neonex_terminal::TerminalContext;
 use ratatui::Terminal;
 use serde_json::Error;
 use soft_ratatui::SoftBackend;
+
+mod windowed_plugins;
 
 pub struct WebPlatform;
 
@@ -43,7 +39,8 @@ impl NeoNexPlatform for WebPlatform {
                 ..default()
             }),
             ..default()
-        }));
+        }).set(ImagePlugin::default_nearest()));
+        SoftatuiContext::add_needed_plugins(app);
         Ok(())
     }
 
@@ -82,6 +79,8 @@ pub struct SoftatuiContext(Terminal<SoftBackend>);
 impl TerminalContext<SoftBackend> for SoftatuiContext {
     fn init() -> Result<SoftatuiContext, BevyError> {
         let backend = SoftBackend::new_with_system_fonts(15, 15, 16);
+        // TODO Switch to this impl: (cuz WASM doesn't have any OS so no system fonts)
+        //  let backend = SoftBackend::new_with_font(width, height, font_size, font_data)
         let terminal = Terminal::new(backend)?;
         Ok(Self(terminal))
     }
@@ -91,6 +90,7 @@ impl TerminalContext<SoftBackend> for SoftatuiContext {
     }
 
     fn add_needed_plugins(app: &mut App) {
-        // TODO
+        app.add_plugins(windowed_plugins::WindowedPlugin);
+        app.insert_non_send_resource(SoftatuiContext::init());
     }
 }

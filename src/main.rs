@@ -51,15 +51,9 @@ fn main() {
     uefi::runtime::reset(ResetType::SHUTDOWN, Status::SUCCESS, None);
 }
 
-struct Config;
-
-impl NeoNexConfig for Config {
-    type Platform = SoftatuiDesktop;
-}
-
 #[cfg(not(feature = "uefi"))]
 fn main() {
-    let mut instance: NeoNexInstance<Config> = NeoNexInstance::new();
+    let mut instance: NeoNexInstance<DefaultNeoNexConfig> = NeoNexInstance::new();
     instance.app.add_systems(Update, tui);
     instance.run();
 }
@@ -113,8 +107,8 @@ fn main() {
 fn tui(
     mut context: NonSendMut<
         RatatuiContext<
-            <<Config as NeoNexConfig>::Platform as NeoNexPlatform>::RatatuiContextGenerics,
-            <<Config as NeoNexConfig>::Platform as NeoNexPlatform>::RatatuiContextBackend,
+            <ActivePlatform as NeoNexPlatform>::RatatuiContextGenerics,
+            <ActivePlatform as NeoNexPlatform>::RatatuiContextBackend,
         >,
     >,
 ) -> core::result::Result<(), BevyError> {

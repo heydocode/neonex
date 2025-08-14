@@ -6,10 +6,7 @@ use std::{
 };
 
 use bevy::{
-    DefaultPlugins,
-    app::App,
-    utils::default,
-    window::{MonitorSelection, Window, WindowMode, WindowPlugin},
+    app::App, render::texture::ImagePlugin, utils::default, window::{MonitorSelection, Window, WindowMode, WindowPlugin}, DefaultPlugins
 };
 use bevy::{
     ecs::error::BevyError,
@@ -58,7 +55,7 @@ impl NeoNexPlatform for MobilePlatform {
                 ..default()
             }),
             ..default()
-        }));
+        }).set(ImagePlugin::default_nearest()));
         Ok(())
     }
 
