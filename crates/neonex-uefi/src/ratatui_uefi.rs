@@ -1,6 +1,7 @@
-use std::fmt::Write;
+use core::fmt::Write;
 
-use uefi::{boot::ScopedProtocol, proto::console};
+use ratatui::{backend::WindowSize, layout::Size, prelude::Backend};
+use uefi::{Error, Status, boot::ScopedProtocol, proto::console};
 
 /// Implements a backend for the `ratatui` crate suitable for use in a UEFI application
 /// or loader.
@@ -69,14 +70,14 @@ impl ratatui::backend::Backend for UefiOutputBackend {
     }
 
     fn hide_cursor(&mut self) -> std::io::Result<()> {
-        // Not supported on all platforms.
+        // NOTE: Not supported on all platforms.
         let _ = self.output.enable_cursor(false);
 
         Ok(())
     }
 
     fn show_cursor(&mut self) -> std::io::Result<()> {
-        // Not supported on all platforms.
+        // NOTE: Not supported on all platforms.
         let _ = self.output.enable_cursor(true);
 
         Ok(())
@@ -125,7 +126,6 @@ impl ratatui::backend::Backend for UefiOutputBackend {
     fn window_size(&mut self) -> std::io::Result<ratatui::backend::WindowSize> {
         let size = self.size()?;
 
-        // TODO: Fill out pixel dimensions?
         Ok(ratatui::backend::WindowSize {
             columns_rows: size,
             pixels: ratatui::prelude::Size {

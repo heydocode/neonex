@@ -5,29 +5,37 @@ edition = "2024"
 
 [workspace]
 members = [
-    "crates/neonex-core",
-    "crates/neonex-desktop", "crates/neonex-embedded",
-    "crates/neonex-macros",
-    "crates/neonex-mobile", "crates/neonex-mockplatform", "crates/neonex-platform", "crates/neonex-shared",
-    "crates/neonex-terminal", "crates/neonex-uefi",
-    "crates/neonex-web", "crates/uefi-terminal",
+  "crates/neonex-core",
+  "crates/neonex-desktop",
+  "crates/neonex-embedded",
+  "crates/neonex-macros",
+  "crates/neonex-mobile",
+  "crates/neonex-mockplatform",
+  "crates/neonex-platform",
+  "crates/neonex-shared",
+  "crates/neonex-terminal",
+  "crates/neonex-uefi",
+  "crates/neonex-web",
 ]
 
 [features]
 desktop = ["neonex-core/desktop"]
 mobile = ["neonex-core/mobile"]
 web = ["neonex-core/web"]
-uefi = ["neonex-core/uefi"]
+uefi = ["neonex-core/uefi", "dep:uefi"]
 embedded = ["neonex-core/embedded"]
 
-desktop-hybrid-contexts = ["neonex-core/desktop-hybrid-contexts"]
+desktop-hybrid-contexts = ["neonex-core/desktop-hybrid-contexts", "dep:soft_ratatui", "dep:neonex-desktop"]
 desktop-softatui-context = ["neonex-core/desktop-softatui-context"]
 desktop-crossterm-context = ["neonex-core/desktop-crossterm-context"]
 
 [dependencies]
 neonex-core = { path = "crates/neonex-core" }
 neonex-platform = { path = "crates/neonex-platform" }
-bevy = "0.16.1"
-neonex-shared ={ path = "crates/neonex-shared" }
-neonex-terminal ={ path = "crates/neonex-terminal"}
+bevy = { version = "0.16.1", default-features = false }
+neonex-shared = { path = "crates/neonex-shared" }
+neonex-terminal = { path = "crates/neonex-terminal" }
 ratatui = { version = "0.29.0", default-features = false }
+uefi ={ version = "0.35.0", features = ["alloc"], optional = true}
+soft_ratatui = { version = "0.0.8", optional = true }
+neonex-desktop = {path = "crates/neonex-desktop", optional = true}

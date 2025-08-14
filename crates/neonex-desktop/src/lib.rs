@@ -1,10 +1,12 @@
 use std::{
     env::temp_dir,
     fs::OpenOptions,
-    io::{Read, Stdout, Write, stdout},
-    path::PathBuf,
+    io::{stdout, Read, Stdout, Write},
+    path::{Path, PathBuf},
 };
 
+#[cfg(feature = "hybrid-contexts")]
+use bevy::asset::uuid::serde;
 use bevy::{
     DefaultPlugins,
     app::App,
@@ -22,8 +24,6 @@ use neonex_terminal::{RatatuiContext, TerminalContext};
 #[cfg(not(any(feature = "softatui", feature = "crossterm")))]
 use ratatui::backend::TestBackend;
 use ratatui::Terminal;
-#[cfg(feature = "hybrid-contexts")]
-use ratatui::backend::TestBackend;
 #[cfg(any(feature = "crossterm", feature = "hybrid-contexts"))]
 use ratatui::{
     crossterm::{
@@ -152,6 +152,218 @@ impl NeoNexPlatform for DesktopPlatform {
     type RatatuiContextBackend = TestBackend;
     #[cfg(not(any(feature = "softatui", feature = "crossterm")))]
     type RatatuiContextGenerics = MockContext;
+}
+
+#[cfg(feature = "hybrid-contexts")]
+pub struct SoftatuiDesktop;
+
+#[cfg(feature = "hybrid-contexts")]
+impl NeoNexPlatform for SoftatuiDesktop {
+    cfg_if::cfg_if! {if #[cfg(target_os = "windows")] {
+        const PLATFORM: &'static str = "Windows";
+    } else if #[cfg(target_os = "linux")] {
+        const PLATFORM: &'static str = "Linux";
+    } else if #[cfg(target_os = "macos")] {
+        const PLATFORM: &'static str = "MacOS";
+    } else {
+        const PLATFORM: &'static str = "Desktop - Unknown OS";
+    }}
+
+    fn retrieve_startup_config_key() -> PathBuf {
+        let mut path = temp_dir();
+        path.push(Self::STARTUP_CONFIG_RANDOM_KEY.to_string());
+        path
+    }
+
+    fn retrieve_startup_config() -> NeoNexStartupConfigSet {
+        let path: PathBuf = Self::retrieve_startup_config_key();
+        let mut options = OpenOptions::new();
+        options.create(true).write(true).read(true);
+        let mut file = options.open(path).expect("Unable to open temp file");
+        let mut buf = String::new();
+        file.read_to_string(&mut buf)
+            .expect("Unable to read to string from temp file");
+        if let Ok(output) = serde_json::from_str(&buf) {
+            return output;
+        } else {
+            if buf.len() > 0 {
+                file.set_len(0)
+                    .expect("Unable to clear the file once the data has been corrupted");
+            }
+            return NeoNexStartupConfigSet::default();
+        }
+    }
+
+    fn update_startup_config(
+        startup_config_set: neonex_shared::NeoNexStartupConfigSet,
+    ) -> serde_json::Result<()> {
+        let path: PathBuf = Self::retrieve_startup_config_key();
+        let mut options = OpenOptions::new();
+        options.create(true).write(true);
+        let mut file = options.open(path).expect("Unable to open temp file");
+        file.write_all(serde_json::to_string(&startup_config_set)?.as_bytes())
+            .expect("Unable to write to the temp file");
+        Ok(())
+    }
+
+    fn setup_bevy<CONFIG: NeoNexConfig>(
+        app: &mut App,
+        startup_config_set: NeoNexStartupConfigSet,
+    ) -> Result<(), BevyError> {
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "hybrid-contexts")] {
+                let context_instance: either::Either<SoftatuiContext, CrosstermContext> =
+                if CONFIG::DESKTOP_HYBRID_SOFTATUI {
+                    either::Left(SoftatuiContext::init()?)
+                }
+                else {
+                    either::Right(CrosstermContext::init()?)
+                };
+            }
+            else if #[cfg(feature = "softatui")] {
+                let instance = SoftatuiContext::init()?;
+                SoftatuiContext::add_needed_plugins(app);
+            } else if #[cfg(feature = "crossterm")] {
+                let instance = CrosstermContext::init()?;
+                CrosstermContext::add_needed_plugins(app);
+            } else {
+                let instance = MockContext::init()?;
+            }
+        }
+
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "hybrid-contexts")] {
+                /*  instance: SoftatuiContext */
+                if let either::Either::Left(instance) = context_instance {
+                    app.insert_non_send_resource(RatatuiContext::init(instance));
+                    SoftatuiContext::add_needed_plugins(app);
+                }
+                /*  instance: CrosstermContext */
+                else if let either::Either::Right(instance) = context_instance {
+                    app.insert_non_send_resource(RatatuiContext::init(instance));
+                    CrosstermContext::add_needed_plugins(app);
+                }
+            } else {
+                app.insert_non_send_resource(RatatuiContext::init(instance));
+            }
+        }
+
+        Ok(())
+    }
+    
+    type RatatuiContextBackend = SoftBackend;
+    
+    type RatatuiContextGenerics = SoftatuiContext;
+    
+    type StartupConfigRetrieveKeyType = PathBuf;
+    
+    type UpdateResult = serde_json::Result<()>;
+}
+
+#[cfg(feature = "hybrid-contexts")]
+pub struct CrosstermDesktop;
+
+#[cfg(feature = "hybrid-contexts")]
+impl NeoNexPlatform for CrosstermDesktop {
+    cfg_if::cfg_if! {if #[cfg(target_os = "windows")] {
+        const PLATFORM: &'static str = "Windows";
+    } else if #[cfg(target_os = "linux")] {
+        const PLATFORM: &'static str = "Linux";
+    } else if #[cfg(target_os = "macos")] {
+        const PLATFORM: &'static str = "MacOS";
+    } else {
+        const PLATFORM: &'static str = "Desktop - Unknown OS";
+    }}
+
+    fn retrieve_startup_config_key() -> PathBuf {
+        let mut path = temp_dir();
+        path.push(Self::STARTUP_CONFIG_RANDOM_KEY.to_string());
+        path
+    }
+
+    fn retrieve_startup_config() -> NeoNexStartupConfigSet {
+        let path: PathBuf = Self::retrieve_startup_config_key();
+        let mut options = OpenOptions::new();
+        options.create(true).write(true).read(true);
+        let mut file = options.open(path).expect("Unable to open temp file");
+        let mut buf = String::new();
+        file.read_to_string(&mut buf)
+            .expect("Unable to read to string from temp file");
+        if let Ok(output) = serde_json::from_str(&buf) {
+            return output;
+        } else {
+            if buf.len() > 0 {
+                file.set_len(0)
+                    .expect("Unable to clear the file once the data has been corrupted");
+            }
+            return NeoNexStartupConfigSet::default();
+        }
+    }
+
+    fn update_startup_config(
+        startup_config_set: neonex_shared::NeoNexStartupConfigSet,
+    ) -> serde_json::Result<()> {
+        let path: PathBuf = Self::retrieve_startup_config_key();
+        let mut options = OpenOptions::new();
+        options.create(true).write(true);
+        let mut file = options.open(path).expect("Unable to open temp file");
+        file.write_all(serde_json::to_string(&startup_config_set)?.as_bytes())
+            .expect("Unable to write to the temp file");
+        Ok(())
+    }
+
+    fn setup_bevy<CONFIG: NeoNexConfig>(
+        app: &mut App,
+        startup_config_set: NeoNexStartupConfigSet,
+    ) -> Result<(), BevyError> {
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "hybrid-contexts")] {
+                let context_instance: either::Either<SoftatuiContext, CrosstermContext> =
+                if CONFIG::DESKTOP_HYBRID_SOFTATUI {
+                    either::Left(SoftatuiContext::init()?)
+                }
+                else {
+                    either::Right(CrosstermContext::init()?)
+                };
+            }
+            else if #[cfg(feature = "softatui")] {
+                let instance = SoftatuiContext::init()?;
+                SoftatuiContext::add_needed_plugins(app);
+            } else if #[cfg(feature = "crossterm")] {
+                let instance = CrosstermContext::init()?;
+                CrosstermContext::add_needed_plugins(app);
+            } else {
+                let instance = MockContext::init()?;
+            }
+        }
+
+        cfg_if::cfg_if! {
+            if #[cfg(feature = "hybrid-contexts")] {
+                /*  instance: SoftatuiContext */
+                if let either::Either::Left(instance) = context_instance {
+                    app.insert_non_send_resource(RatatuiContext::init(instance));
+                    SoftatuiContext::add_needed_plugins(app);
+                }
+                /*  instance: CrosstermContext */
+                else if let either::Either::Right(instance) = context_instance {
+                    app.insert_non_send_resource(RatatuiContext::init(instance));
+                    CrosstermContext::add_needed_plugins(app);
+                }
+            } else {
+                app.insert_non_send_resource(RatatuiContext::init(instance));
+            }
+        }
+
+        Ok(())
+    }
+    
+    type RatatuiContextBackend = CrosstermBackend<Stdout>;
+    
+    type RatatuiContextGenerics = CrosstermContext;
+    
+    type StartupConfigRetrieveKeyType = PathBuf;
+    
+    type UpdateResult = serde_json::Result<()>;
 }
 
 #[cfg(any(feature = "softatui", feature = "hybrid-contexts"))]

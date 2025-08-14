@@ -8,4 +8,4 @@ bevy = "0.16.1"
 neonex-platform = { path = "../neonex-platform" }
 ratatui = { version = "0.29.0", default-features = false }
 neonex-terminal = { path = "../neonex-terminal" }
-neonex-shared = {path = "../neonex-shared"}
+neonex-shared = { path = "../neonex-shared" }

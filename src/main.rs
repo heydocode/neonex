@@ -1,56 +1,131 @@
-use bevy::{app::{AppExit, PostStartup, Update}, ecs::{error::BevyError, system::{Local, NonSendMut, Res, ResMut}}};
-use neonex_core::{ActivePlatform, NeoNexInstance};
+#![cfg_attr(feature = "uefi", uefi_std)]
+
+use bevy::app::Update;
+use bevy::ecs::error::BevyError;
+use bevy::ecs::system::{Local, NonSendMut};
+use neonex_core::{ActivePlatform, DefaultNeoNexConfig, NeoNexInstance};
 use neonex_platform::{NeoNexConfig, NeoNexPlatform};
-use neonex_shared::NeoNexStartupConfig;
 use neonex_terminal::RatatuiContext;
+use ratatui::style::{Style, Stylize};
 use ratatui::text::Line;
+use ratatui::widgets::{Block, Paragraph, Wrap};
+use ratatui::{Frame, Terminal};
+#[cfg(feature = "uefi")]
+use std::os::uefi as uefi_std;
+use std::time::Duration;
+#[cfg(feature = "desktop-hybrid-contexts")]
+use neonex_desktop::SoftatuiDesktop;
+#[cfg(feature = "uefi")]
+use uefi::proto::console::gop::GraphicsOutput;
+#[cfg(feature = "uefi")]
+use uefi::runtime::ResetType;
+#[cfg(feature = "uefi")]
+use uefi::{Handle, Status, boot};
 
-struct CustomizedNeoNex;
+#[cfg(feature = "uefi")]
+/// Performs the necessary setup code for the `uefi` crate.
+fn setup_uefi_crate() {
+    let st = uefi_std::env::system_table();
+    let ih = uefi_std::env::image_handle();
 
-impl NeoNexConfig for CustomizedNeoNex {
-    type Platform = ActivePlatform;
+    // Mandatory setup code for `uefi` crate.
+    unsafe {
+        uefi::table::set_system_table(st.as_ptr().cast());
+
+        let ih = Handle::from_ptr(ih.as_ptr().cast()).unwrap();
+        uefi::boot::set_image_handle(ih);
+    }
 }
 
+#[cfg(feature = "uefi")]
 fn main() {
-    let mut startup_config_set = ActivePlatform::retrieve_startup_config();
-    let new_value = if startup_config_set.values.len() < 1 {
-        false
-    } else {
-        if let NeoNexStartupConfig::NativeTerminal(n) = startup_config_set.values.clone().into_iter().last().unwrap() {
-            !n
-        } else {
-            false
-        }
-    };
-    println!("Retrieved: {:?}", startup_config_set);
-    startup_config_set
-        .values
-        .insert(NeoNexStartupConfig::NativeTerminal(new_value));
-    ActivePlatform::update_startup_config(startup_config_set);
-    let startup_config_set = ActivePlatform::retrieve_startup_config();
-    println!("Retrieved: {:?}", startup_config_set);
-    let path_or_key = ActivePlatform::retrieve_startup_config_key();
-    println!("Path or key: {:?}", path_or_key);
+    println!("Hello World from uefi_std");
+    setup_uefi_crate();
+    println!("UEFI-Version is {}", uefi::system::uefi_revision());
 
-    let mut instance: NeoNexInstance<CustomizedNeoNex, ActivePlatform> = NeoNexInstance::new();
+    let mut instance: NeoNexInstance<DefaultNeoNexConfig, ActivePlatform> = NeoNexInstance::new();
+    instance.app.add_systems(Update, tui);
+    instance.run();
 
-    println!("{}", ActivePlatform::PLATFORM);
-
-    instance.app.add_systems(Update, ui_system);
-
-    match &mut instance.run() {
-        AppExit::Success => println!("NeoNex terminated successfully"),
-        AppExit::Error(code) => eprintln!("NeoNex terminated with error code {}", code),
-    };
+    boot::stall(10_000_000);
+    uefi::runtime::reset(ResetType::SHUTDOWN, Status::SUCCESS, None);
 }
 
-fn ui_system(
-    mut context: NonSendMut<RatatuiContext<<ActivePlatform as NeoNexPlatform>::RatatuiContextGenerics, <ActivePlatform as NeoNexPlatform>::RatatuiContextBackend>>, mut iter: Local<u64>) -> Result<(), BevyError> {
+struct Config;
+
+impl NeoNexConfig for Config {
+    type Platform = SoftatuiDesktop;
+}
+
+#[cfg(not(feature = "uefi"))]
+fn main() {
+    let mut instance: NeoNexInstance<Config> = NeoNexInstance::new();
+    instance.app.add_systems(Update, tui);
+    instance.run();
+}
+
+// mod std_init;
+
+// fn main() {
+//     std_init::init();
+// }
+
+// #![no_std]
+// #![no_main]
+
+// use bevy::prelude::*;
+// use core::panic::PanicInfo;
+// use neonex_core::{ActivePlatform, DefaultNeoNexConfig, NeoNexInstance};
+// use neonex_platform::NeoNexPlatform;
+// use neonex_terminal::RatatuiContext;
+// use uefi::{allocator::Allocator, prelude::*, println};
+
+// // 1. Set the UEFI allocator as global
+// #[global_allocator]
+// static ALLOCATOR: Allocator = Allocator;
+
+// #[panic_handler]
+// fn panic(info: &PanicInfo) -> ! {
+//     if let Some(location) = info.location() {
+//         uefi::println!("at {}:{}\r\n", location.file(), location.line());
+//     }
+
+//     println!("Panic message: {}", info.message());
+//     println!("As no_std panic handlers must have ! signature, looping no-op...");
+
+//     loop {}
+// }
+
+// #[entry]
+// fn main() -> Status {
+//     // 3. Initialize allocator & logger
+//     uefi::helpers::init().unwrap();
+
+//     uefi::println!("Hello world with allocator!");
+
+//     let mut instance: NeoNexInstance<DefaultNeoNexConfig, ActivePlatform> = NeoNexInstance::new();
+//     instance.app.add_systems(Update, tui);
+//     instance.run();
+
+//     Status::SUCCESS
+// }
+
+fn tui(
+    mut context: NonSendMut<
+        RatatuiContext<
+            <<Config as NeoNexConfig>::Platform as NeoNexPlatform>::RatatuiContextGenerics,
+            <<Config as NeoNexConfig>::Platform as NeoNexPlatform>::RatatuiContextBackend,
+        >,
+    >,
+) -> core::result::Result<(), BevyError> {
     context.draw(|frame| {
         let area = frame.area();
-        frame.render_widget(Line::from(iter.to_string()), area);
+
+        let text = ratatui::text::Line::from(frame.count().to_string());
+        let widget = ratatui::widgets::Paragraph::new(text);
+
+        frame.render_widget(widget, area);
     })?;
-    *iter += 1;
 
     Ok(())
 }

@@ -3,7 +3,7 @@
 use core::marker::PhantomData;
 
 use bevy::{
-    app::{App, AppExit, PostStartup}, ecs::{resource::Resource, system::ResMut}, platform::prelude::{vec::Vec, String}, prelude::{Deref, DerefMut}
+    app::{App, AppExit, PostStartup, Update}, ecs::{resource::Resource, system::{NonSendMut, ResMut}}, platform::prelude::{vec::Vec, String}, prelude::{Deref, DerefMut}
 };
 use neonex_platform::{NeoNexConfig, NeoNexPlatform };
 use neonex_shared::{NeoNexStartupConfig, NeoNexStartupConfigSet};
@@ -34,9 +34,8 @@ impl NeoNexConfig for DefaultNeoNexConfig {
 }
 
 ///
-pub struct NeoNexInstance<CONFIG: NeoNexConfig, ActivePlatform: NeoNexPlatform> {
+pub struct NeoNexInstance<CONFIG: NeoNexConfig> {
     pub _config: PhantomData<CONFIG>,
-    pub _active_platform: PhantomData<ActivePlatform>,
     pub app: App,
 }
 
@@ -56,7 +55,7 @@ impl<CONFIG: NeoNexConfig> Drop for SCSWrapper<CONFIG> {
     }
 }
 
-impl<CONFIG: NeoNexConfig, ActivePlatform: NeoNexPlatform + 'static> NeoNexInstance<CONFIG, ActivePlatform> {
+impl<CONFIG: NeoNexConfig> NeoNexInstance<CONFIG> {
     fn add_scs(mut scs: ResMut<SCSWrapper<CONFIG>>) {
         scs.values.insert(NeoNexStartupConfig::Bla(String::from("BlaBlabllalalaa")));
         scs.values.insert(NeoNexStartupConfig::Test1(19555));
@@ -76,14 +75,13 @@ impl<CONFIG: NeoNexConfig, ActivePlatform: NeoNexPlatform + 'static> NeoNexInsta
 
         Self {
             _config: PhantomData::<CONFIG>,
-            _active_platform: PhantomData::<ActivePlatform>,
             app: app,
         }
     }
 
     /// Isn't intended to be public: wrapper around internal bevy init
     fn setup_bevy(app: &mut App, startup_config_set: NeoNexStartupConfigSet) {
-        ActivePlatform::setup_bevy::<CONFIG>(app, startup_config_set);
+        let _ = CONFIG::Platform::setup_bevy::<CONFIG>(app, startup_config_set);
     }
 
     /// Runs the NeoNex runtime: Launches bevy ECS, inits the window/terminal, etc.

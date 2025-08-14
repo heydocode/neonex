@@ -10,6 +10,7 @@ use neonex_macros::generate_32char_seed;
 use neonex_shared::NeoNexStartupConfigSet;
 use neonex_terminal::TerminalContext;
 use ratatui::prelude::Backend;
+use ratatui::style::Color;
 use serde::{Deserialize, Serialize};
 use core::hash::{Hash, Hasher};
 
@@ -94,4 +95,6 @@ pub trait NeoNexConfig: Sized + Send + Sync + 'static {
     const DESKTOP_HYBRID_SOFTATUI: bool = true;
     const WINDOW_NAME: &'static str = "NeoNex";
     const NAME: &'static str = "NeoNex";
+    const DEFAULT_BACKGROUND_COLOR: Color = Color::Black;
+    const DEFAULT_FOREGROUND_COLOR: Color = Color::White;
 }

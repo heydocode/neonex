@@ -15,7 +15,7 @@ pub struct RatatuiContext<Ctx: TerminalContext<B>, B: Backend + 'static> {
 impl<Ctx: TerminalContext<B>, B: Backend + 'static> Drop for RatatuiContext<Ctx, B> {
     fn drop(&mut self) {
         if let Err(err) = Ctx::restore() {
-            error!("Failed to restore terminal: {}", err);
+            // error!("Failed to restore terminal: {}", err);
         }
     }
 }

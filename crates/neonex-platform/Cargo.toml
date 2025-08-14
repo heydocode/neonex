@@ -8,10 +8,10 @@ desktop-hybrid-contexts = []
 
 [dependencies]
 cfg-if = "1.0.1"
-serde = { version = "1.0", features = ["derive"]}
-bevy = "0.16.1"
+serde = { version = "1.0", features = ["derive"], default-features = false }
+bevy = { version = "0.16.1", default-features = false }
 serde_json = { version = "1.0", default-features = false, features = ["alloc"] }
-neonex-macros = {path = "../neonex-macros"}
-neonex-terminal = {path = "../neonex-terminal"}
-ratatui = {version = "0.29.0", default-features = false}
-neonex-shared = {path = "../neonex-shared"}
+neonex-macros = { path = "../neonex-macros" }
+neonex-terminal = { path = "../neonex-terminal" }
+ratatui = { version = "0.29.0", default-features = false }
+neonex-shared = { path = "../neonex-shared" }
