@@ -4,6 +4,8 @@ use bevy::app::Update;
 use bevy::ecs::error::BevyError;
 use bevy::ecs::system::{Local, NonSendMut};
 use neonex_core::{ActivePlatform, DefaultNeoNexConfig, NeoNexInstance};
+#[cfg(feature = "desktop-hybrid-contexts")]
+use neonex_desktop::SoftatuiDesktop;
 use neonex_platform::{NeoNexConfig, NeoNexPlatform};
 use neonex_terminal::RatatuiContext;
 use ratatui::style::{Style, Stylize};
@@ -13,8 +15,6 @@ use ratatui::{Frame, Terminal};
 #[cfg(feature = "uefi")]
 use std::os::uefi as uefi_std;
 use std::time::Duration;
-#[cfg(feature = "desktop-hybrid-contexts")]
-use neonex_desktop::SoftatuiDesktop;
 #[cfg(feature = "uefi")]
 use uefi::proto::console::gop::GraphicsOutput;
 #[cfg(feature = "uefi")]
@@ -53,8 +53,19 @@ fn main() {
 
 #[cfg(not(feature = "uefi"))]
 fn main() {
+
     let mut instance: NeoNexInstance<DefaultNeoNexConfig> = NeoNexInstance::new();
     instance.app.add_systems(Update, tui);
+    // CAUTION Custom runner for bench purposes only.
+    // instance.app.set_runner(|mut app| {
+    //     for _ in 0..1_000 {
+    //         app.update();
+    //         if let Some(exit) = app.should_exit() {
+    //             return exit;
+    //         }
+    //     }
+    //     return bevy::app::AppExit::Success;
+    // });
     instance.run();
 }
 

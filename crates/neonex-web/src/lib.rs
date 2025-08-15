@@ -1,10 +1,10 @@
 use bevy::{
-    app::{App, PluginGroup, Update}, ecs::{error::BevyError, system::Res}, log::{info, warn}, prelude::{Deref, DerefMut}, render::texture::ImagePlugin, utils::default, window::{Window, WindowPlugin}, DefaultPlugins
+    app::{App, PluginGroup, Update}, ecs::{error::BevyError, system::Res}, log::{info, warn}, prelude::{Deref, DerefMut}, render::texture::ImagePlugin, text::DEFAULT_FONT_DATA, utils::default, window::{Window, WindowPlugin}, DefaultPlugins
 };
 use gloo_storage::{LocalStorage, Storage};
 use neonex_platform::{NeoNexConfig, NeoNexPlatform};
 use neonex_shared::NeoNexStartupConfigSet;
-use neonex_terminal::TerminalContext;
+use neonex_terminal::{RatatuiContext, TerminalContext};
 use ratatui::Terminal;
 use serde_json::Error;
 use soft_ratatui::SoftBackend;
@@ -78,9 +78,9 @@ pub struct SoftatuiContext(Terminal<SoftBackend>);
 
 impl TerminalContext<SoftBackend> for SoftatuiContext {
     fn init() -> Result<SoftatuiContext, BevyError> {
-        let backend = SoftBackend::new_with_system_fonts(15, 15, 16);
         // TODO Switch to this impl: (cuz WASM doesn't have any OS so no system fonts)
-        //  let backend = SoftBackend::new_with_font(width, height, font_size, font_data)
+        static FONT_DATA: &[u8] = include_bytes!("../DejaVuSansMono.ttf");
+        let backend = SoftBackend::new_with_font(15, 15, 16, FONT_DATA);
         let terminal = Terminal::new(backend)?;
         Ok(Self(terminal))
     }
@@ -91,6 +91,7 @@ impl TerminalContext<SoftBackend> for SoftatuiContext {
 
     fn add_needed_plugins(app: &mut App) {
         app.add_plugins(windowed_plugins::WindowedPlugin);
-        app.insert_non_send_resource(SoftatuiContext::init());
+        let instance = SoftatuiContext::init().expect("Unable to init Web Softatui Context!");
+        app.insert_non_send_resource(RatatuiContext::init(instance));
     }
 }

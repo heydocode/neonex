@@ -1,12 +1,12 @@
+use crate::SoftatuiContext;
 use bevy::{
     asset::RenderAssetUsages,
     prelude::*,
     render::render_resource::{Extent3d, TextureDimension, TextureFormat},
     window::WindowResized,
 };
-use soft_ratatui::SoftBackend;
 use neonex_terminal::RatatuiContext as RatatuiContextGeneric;
-use crate::SoftatuiContext;
+use soft_ratatui::SoftBackend;
 
 type RatatuiContext = RatatuiContextGeneric<SoftatuiContext, SoftBackend>;
 
@@ -46,6 +46,7 @@ pub fn terminal_render_setup(
         TextureDimension::D2,
         data,
         TextureFormat::Rgba8UnormSrgb,
+        // RECHECK if only RENDER_WORLD suffices
         RenderAssetUsages::RENDER_WORLD | RenderAssetUsages::MAIN_WORLD,
     );
     let handle = images.add(image);
@@ -71,20 +72,42 @@ fn render_terminal_to_handle(
 ) {
     let width = softatui.backend().get_pixmap_width() as u32;
     let height = softatui.backend().get_pixmap_height() as u32;
-    let data = softatui.backend().get_pixmap_data_as_rgba();
+    // NOTE: Even though retrieving RGB instead of RGBA would require further conversion,
+    //  as the function provides a reference, we don't need to reallocate the data, which
+    //  leads to a significant performance win (even if including the conversion!)
+    //
+    //  It would be great if `soft_ratatui` provided a feature to store its data in RGBA
+    //  directly, and/or then provide a function to get RGBA data REFERENCE, not OWNERSHIP.
+    //  Obviously, if soft stored initially RGBA, it's better because it doesn't need to do
+    //  the conversion on its side.
+    // TODO Contribute to soft_ratatui to bump its ratatui version to 0.30.0, and provide a
+    //  feature to store its pixel data in RGBA, then if feature disabled store it in RGB.
+    let rgb_data = softatui.backend().get_pixmap_data();
 
     let image = images.get_mut(&my_handle.0).expect("Image not found");
-    *image = Image::new(
-        Extent3d {
-            width,
-            height,
+
+    if image.texture_descriptor.size.width != width
+        || image.texture_descriptor.size.height != height
+    {
+        image.resize(Extent3d {
+            width: width,
+            height: height,
             depth_or_array_layers: 1,
-        },
-        TextureDimension::D2,
-        data,
-        TextureFormat::Rgba8UnormSrgb,
-        RenderAssetUsages::RENDER_WORLD | RenderAssetUsages::MAIN_WORLD,
-    );
+        });
+
+        image.data.as_mut().unwrap().resize((width * height * 4) as usize, 255);
+    }
+
+    // NOTE: If compiling in release mode, this for loop gets incredibly performant (-50% of overall frame time)
+    //  "overall frame time" means that the entire app got a 50% frame time reduce after applying this method of updating the rendered texture
+    //  As of 08.15.2025, frame time went from 0.00919s (before optimization) to 0.00497s (after optimization).
+    //  Frametime calculated on an average frametime from 2000 frames.
+    for (rgb, rgba) in rgb_data.chunks_exact(3).zip(image.data.as_mut().unwrap().chunks_exact_mut(4)) {
+        rgba[0] = rgb[0];
+        rgba[1] = rgb[1];
+        rgba[2] = rgb[2];
+        rgba[3] = 255;
+    }
 }
 
 /// System that reacts to window resize
