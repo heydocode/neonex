@@ -14,9 +14,11 @@ use bevy::{
 };
 use neonex_platform::{NeoNexConfig, NeoNexPlatform,};
 use neonex_shared::NeoNexStartupConfigSet;
-use neonex_terminal::TerminalContext;
+use neonex_terminal::{RatatuiContext, TerminalContext};
 use ratatui::Terminal;
 use soft_ratatui::SoftBackend;
+
+mod windowed_plugins;
 
 pub struct MobilePlatform;
 
@@ -120,6 +122,6 @@ impl TerminalContext<SoftBackend> for SoftatuiContext {
     }
 
     fn add_needed_plugins(app: &mut App) {
-        // TODO
+        app.insert_non_send_resource(RatatuiContext::init(SoftatuiContext::init().expect("Unable to init Mobile Softatui Context")));
     }
 }

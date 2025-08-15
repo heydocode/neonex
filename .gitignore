@@ -1,7 +1,6 @@
 /target
 /Cargo.lock
 /.history
-/uefi-execution-steps.txt
 /OVMF_CODE_4M.fd
 /OVMF_VARS_4M.fd
 /esp

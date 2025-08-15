@@ -103,6 +103,12 @@
             "background": "#ff0000",
             "iconColour": "#ffd000"
         },
+        "ALTERNATIVE": {
+            "icon": "bookmark",
+            "foreground": "#FFFFFF",
+            "background": "#008000",
+            "iconColour": "#008000"
+        },
     },
     "todo-tree.general.tags": [
         "BUG",
@@ -119,8 +125,11 @@
         "COMMENT",
         "[ ]",
         "[x]",
-        "BRANDING", // This project is a template, so all branding occurences should be trackable in order to start a project rapidly
-        "CAUTION", // It serves for sensible project parts, which follow strict conventions.
+        "BRANDING",
+        "CAUTION",
+        // Alternative way of implementing it, often just a better implementation, 
+        // but the perf win is not so big to invest time for implementing it.
+        "ALTERNATIVE",
     ],
     "todo-tree.regex.regex": "(//|#|<!--|;|/\\*|^|^\\s*(-|\\d+.))\\s*($TAGS).*(\\n\\s*//\\s{2,}.*)*",
     "local-history.daysLimit": 0, // A day number to purge local history. (0: no purge)

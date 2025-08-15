@@ -385,10 +385,6 @@ impl TerminalContext<SoftBackend> for SoftatuiContext {
     }
 
     fn add_needed_plugins(app: &mut App) {
-        use std::time::Duration;
-
-        use bevy::app::ScheduleRunnerPlugin;
-
         app.add_plugins((
             DefaultPlugins.set(ImagePlugin::default_nearest()),
             windowed_plugins::WindowedPlugin,

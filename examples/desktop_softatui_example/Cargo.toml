@@ -1,0 +1,39 @@
+[package]
+name = "desktop_softatui_example"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+soft_ratatui = { version = "0.0.8" }
+neonex-desktop = { path = "../../crates/neonex-desktop" }
+neonex-shared = { path = "../../crates/neonex-shared" }
+neonex-terminal = { path = "../../crates/neonex-terminal" }
+ratatui = { version = "0.29.0", default-features = false }
+bevy = { version = "0.16.1", default-features = false }
+neonex-core = { path = "../../crates/neonex-core", features = [
+  "desktop",
+  "desktop-softatui-context",
+] }
+neonex-platform = { path = "../../crates/neonex-platform" }
+
+[package.metadata]
+supported-targets = [
+  # Desktop - [Linux, Windows, MacOS]
+
+  ## Linux
+  "x86_64-unknown-linux-gnu",
+  "i686-unknown-linux-gnu",
+  "aarch64-unknown-linux-gnu",
+  "armv7-unknown-linux-gnueabihf",
+  "arm-unknown-linux-gnueabi",
+
+  ## Windows
+  "x86_64-pc-windows-msvc",
+  "x86_64-pc-windows-gnu",
+  "i686-pc-windows-msvc",
+  "i686-pc-windows-gnu",
+
+  ## MacOS
+  "x86_64-apple-darwin",
+  "aarch64-apple-darwin",
+]

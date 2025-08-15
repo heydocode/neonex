@@ -102,6 +102,13 @@ fn render_terminal_to_handle(
     //  "overall frame time" means that the entire app got a 50% frame time reduce after applying this method of updating the rendered texture
     //  As of 08.15.2025, frame time went from 0.00919s (before optimization) to 0.00497s (after optimization).
     //  Frametime calculated on an average frametime from 2000 frames.
+    // ALTERNATIVE: Conversion from RGB to RGBA can and should be done on the GPU side.
+    //  Wins from this may be considerable, but out of scope at the moment, as it's better
+    //  to contribute to soft_ratatui to have in their workspace a new feature "rgba", to
+    //  store its pixel data into the RGBA format directly.
+    //  I think that I'll make features `rgb` (default) and `rgba` (non-default, useful for
+    //  `bevy_ratatui`, and this project, which takes the bevy_ratatui code while fine-tuning it
+    //  for its own needs).
     for (rgb, rgba) in rgb_data.chunks_exact(3).zip(image.data.as_mut().unwrap().chunks_exact_mut(4)) {
         rgba[0] = rgb[0];
         rgba[1] = rgb[1];
