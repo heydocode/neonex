@@ -1,30 +1,13 @@
+use agnostic_logic::DemoPlugin;
+use bevy::{app::Update, ecs::{error::BevyError, system::NonSendMut}};
 use neonex_core::{ActivePlatform, DefaultNeoNexConfig, NeoNexInstance};
-use bevy::prelude::*;
 use neonex_platform::NeoNexPlatform;
 use neonex_terminal::RatatuiContext;
+use ratatui::{layout::{Constraint, Flex, Layout, Rect}, style::Stylize, widgets::{Block, Clear, Paragraph, Wrap}, Frame};
 
 fn main() {
-    let mut instance: NeoNexInstance<DefaultNeoNexConfig> = NeoNexInstance::new();
-    instance.app.add_systems(Update, tui);
+    let mut instance: NeoNexInstance = NeoNexInstance::new();
+    // DemoPlugin - a ratatui set of animated widgets setup
+    instance.app.add_plugins(DemoPlugin);
     instance.run();
-}
-
-fn tui(
-    mut context: NonSendMut<
-        RatatuiContext<
-            <ActivePlatform as NeoNexPlatform>::RatatuiContextGenerics,
-            <ActivePlatform as NeoNexPlatform>::RatatuiContextBackend,
-        >,
-    >,
-) -> core::result::Result<(), BevyError> {
-    context.draw(|frame| {
-        let area = frame.area();
-
-        let text = ratatui::text::Line::from(frame.count().to_string());
-        let widget = ratatui::widgets::Paragraph::new(text);
-
-        frame.render_widget(widget, area);
-    })?;
-
-    Ok(())
 }

@@ -62,7 +62,6 @@ impl TerminalContext<UefiOutputBackend> for UefiTerminalContext {
     }
 
     fn restore() -> bevy::ecs::error::Result<()> {
-        // TODO See if UEFI needs/recommends to safely uninit
         Ok(())
     }
 

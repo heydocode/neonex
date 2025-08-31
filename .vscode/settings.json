@@ -3,6 +3,9 @@
     // This uses extra storage space, so consider commenting it out.
     "rust-analyzer.cargo.targetDir": true,
     "rust-analyzer.cargo.noDefaultFeatures": false,
+    "rust-analyzer.cargo.extraEnv": {
+        "RUST_ANALYZER_EXT": "1"
+    },
     "todo-tree.highlights.defaultHighlight": {
         "icon": "alert",
         "type": "text-and-comment",

@@ -11,6 +11,7 @@ uefi = { version = "0.35.0", features = ["alloc"] }
 bevy = { version = "0.16.1", default-features = false }
 neonex-core = { path = "../../crates/neonex-core", features = ["uefi"] }
 neonex-platform = { path = "../../crates/neonex-platform" }
+agnostic_logic = { path = "../agnostic_logic" }
 
 [package.metadata]
 supported-targets = [

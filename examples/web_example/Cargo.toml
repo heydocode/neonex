@@ -1,10 +1,7 @@
 [package]
-name = "mobile_example"
+name = "web_example"
 version = "0.1.0"
 edition = "2024"
-
-[lib]
-crate-type = ["cdylib"]
 
 [dependencies]
 soft_ratatui = { version = "0.0.8" }
@@ -12,14 +9,13 @@ neonex-shared = { path = "../../crates/neonex-shared" }
 neonex-terminal = { path = "../../crates/neonex-terminal" }
 ratatui = { version = "0.29.0", default-features = false }
 bevy = { version = "0.16.1", default-features = false }
-neonex-core = { path = "../../crates/neonex-core", features = ["mobile"] }
+neonex-core = { path = "../../crates/neonex-core", features = [
+  "web"
+] }
 neonex-platform = { path = "../../crates/neonex-platform" }
 agnostic_logic = { path = "../agnostic_logic" }
 
 [package.metadata]
 supported-targets = [
-  "armv7-linux-androideabi",
-  "aarch64-linux-android",
-  "i686-linux-android",
-  "x86_64-linux-android",
+    "wasm32-unknown-unknown"
 ]

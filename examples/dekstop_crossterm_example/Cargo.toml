@@ -1,10 +1,9 @@
 [package]
-name = "desktop_softatui_example"
+name = "dekstop_crossterm_example"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-soft_ratatui = { version = "0.0.8" }
 neonex-desktop = { path = "../../crates/neonex-desktop" }
 neonex-shared = { path = "../../crates/neonex-shared" }
 neonex-terminal = { path = "../../crates/neonex-terminal" }
@@ -12,7 +11,7 @@ ratatui = { version = "0.29.0", default-features = false }
 bevy = { version = "0.16.1", default-features = false }
 neonex-core = { path = "../../crates/neonex-core", features = [
   "desktop",
-  "desktop-softatui-context",
+  "desktop-crossterm-context",
 ] }
 neonex-platform = { path = "../../crates/neonex-platform" }
 agnostic_logic = { path = "../agnostic_logic" }

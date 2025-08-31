@@ -1,7 +1,7 @@
 use std::{
     env::temp_dir,
     fs::OpenOptions,
-    io::{stdout, Read, Stdout, Write},
+    io::{Read, Stdout, Write, stdout},
     path::{Path, PathBuf},
 };
 
@@ -14,16 +14,17 @@ use bevy::{
     utils::default,
     window::{Window, WindowPlugin},
 };
+use neonex_terminal::RatatuiContext;
 use bevy::{
     ecs::error::BevyError,
     prelude::{Deref, DerefMut, PluginGroup},
 };
 use neonex_platform::{NeoNexConfig, NeoNexPlatform};
 use neonex_shared::NeoNexStartupConfigSet;
-use neonex_terminal::{RatatuiContext, TerminalContext};
+use neonex_terminal::{TerminalContext};
+use ratatui::Terminal;
 #[cfg(not(any(feature = "softatui", feature = "crossterm")))]
 use ratatui::backend::TestBackend;
-use ratatui::Terminal;
 #[cfg(any(feature = "crossterm", feature = "hybrid-contexts"))]
 use ratatui::{
     crossterm::{
@@ -100,39 +101,27 @@ impl NeoNexPlatform for DesktopPlatform {
     ) -> Result<(), BevyError> {
         cfg_if::cfg_if! {
             if #[cfg(feature = "hybrid-contexts")] {
-                let context_instance: either::Either<SoftatuiContext, CrosstermContext> =
                 if CONFIG::DESKTOP_HYBRID_SOFTATUI {
-                    either::Left(SoftatuiContext::init()?)
+                    let instance = SoftatuiContext::init()?;
+                    app.insert_non_send_resource(RatatuiContext::init(instance));
+                    SoftatuiContext::add_needed_plugins(app);
                 }
                 else {
-                    either::Right(CrosstermContext::init()?)
+                    let instance = CrosstermContext::init()?;
+                    app.insert_non_send_resource(RatatuiContext::init(instance));
+                    CrosstermContext::add_needed_plugins(app);
                 };
             }
             else if #[cfg(feature = "softatui")] {
                 let instance = SoftatuiContext::init()?;
+                app.insert_non_send_resource(RatatuiContext::init(instance));
                 SoftatuiContext::add_needed_plugins(app);
             } else if #[cfg(feature = "crossterm")] {
                 let instance = CrosstermContext::init()?;
+                app.insert_non_send_resource(RatatuiContext::init(instance));
                 CrosstermContext::add_needed_plugins(app);
             } else {
                 let instance = MockContext::init()?;
-            }
-        }
-
-        cfg_if::cfg_if! {
-            if #[cfg(feature = "hybrid-contexts")] {
-                /*  instance: SoftatuiContext */
-                if let either::Either::Left(instance) = context_instance {
-                    app.insert_non_send_resource(RatatuiContext::init(instance));
-                    SoftatuiContext::add_needed_plugins(app);
-                }
-                /*  instance: CrosstermContext */
-                else if let either::Either::Right(instance) = context_instance {
-                    app.insert_non_send_resource(RatatuiContext::init(instance));
-                    CrosstermContext::add_needed_plugins(app);
-                }
-            } else {
-                app.insert_non_send_resource(RatatuiContext::init(instance));
             }
         }
 
@@ -250,13 +239,13 @@ impl NeoNexPlatform for SoftatuiDesktop {
 
         Ok(())
     }
-    
+
     type RatatuiContextBackend = SoftBackend;
-    
+
     type RatatuiContextGenerics = SoftatuiContext;
-    
+
     type StartupConfigRetrieveKeyType = PathBuf;
-    
+
     type UpdateResult = serde_json::Result<()>;
 }
 
@@ -356,13 +345,13 @@ impl NeoNexPlatform for CrosstermDesktop {
 
         Ok(())
     }
-    
+
     type RatatuiContextBackend = CrosstermBackend<Stdout>;
-    
+
     type RatatuiContextGenerics = CrosstermContext;
-    
+
     type StartupConfigRetrieveKeyType = PathBuf;
-    
+
     type UpdateResult = serde_json::Result<()>;
 }
 
@@ -417,7 +406,18 @@ impl TerminalContext<CrosstermBackend<Stdout>> for CrosstermContext {
     }
 
     fn add_needed_plugins(app: &mut App) {
-        // TODO
+        use std::time::Duration;
+
+        use bevy::{MinimalPlugins, app::ScheduleRunnerPlugin};
+
+        use crate::crossterm_plugins::CrosstermPlugins;
+
+        app.add_plugins((
+            CrosstermPlugins,
+            MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs_f32(
+                1. / 60.,
+            ))),
+        ));
     }
 }
 

@@ -15,11 +15,7 @@ members = [
   "crates/neonex-shared",
   "crates/neonex-terminal",
   "crates/neonex-uefi",
-  "crates/neonex-web",
-
-  "examples/desktop_softatui_example",
-  "examples/mobile_example",
-  "examples/uefi_example",
+  "crates/neonex-web", 
 ]
 
 [features]

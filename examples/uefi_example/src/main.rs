@@ -1,11 +1,12 @@
 #![feature(uefi_std)]
 
+use agnostic_logic::DemoPlugin;
 use bevy::app::Update;
 use bevy::ecs::error::BevyError;
 use bevy::ecs::system::{Local, NonSendMut};
 use neonex_core::{ActivePlatform, DefaultNeoNexConfig, NeoNexInstance};
 use neonex_platform::{NeoNexConfig, NeoNexPlatform};
-use neonex_terminal::RatatuiContext;
+use neonex_core::DefaultRatatuiContext;
 use ratatui::style::{Style, Stylize};
 use ratatui::text::Line;
 use std::os::uefi as uefi_std;
@@ -26,33 +27,25 @@ fn setup_uefi_crate() {
     }
 }
 
+fn setup_panic_handler() {
+    std::panic::set_hook(Box::new(|info| {
+        if let Some(location) = info.location() {
+            println!("Panic \"{}\" at {}:{}", info.payload().downcast_ref::<&str>().unwrap_or(&"<no msg>"), location.file(), location.line());
+        } else {
+            println!("Panic occurred but no location information available.");
+        }
+    }));
+}
+
 fn main() {
+    setup_panic_handler();
     setup_uefi_crate();
 
-    let mut instance: NeoNexInstance<DefaultNeoNexConfig> = NeoNexInstance::new();
-    instance.app.add_systems(Update, tui);
+    let mut instance: NeoNexInstance = NeoNexInstance::new();
+    // DemoPlugin - a ratatui set of animated widgets setup
+    instance.app.add_plugins(DemoPlugin);
     instance.run();
 
     boot::stall(10_000_000);
     uefi::runtime::reset(ResetType::SHUTDOWN, Status::SUCCESS, None);
-}
-
-fn tui(
-    mut context: NonSendMut<
-        RatatuiContext<
-            <ActivePlatform as NeoNexPlatform>::RatatuiContextGenerics,
-            <ActivePlatform as NeoNexPlatform>::RatatuiContextBackend,
-        >,
-    >,
-) -> core::result::Result<(), BevyError> {
-    context.draw(|frame| {
-        let area = frame.area();
-
-        let text = ratatui::text::Line::from(frame.count().to_string());
-        let widget = ratatui::widgets::Paragraph::new(text);
-
-        frame.render_widget(widget, area);
-    })?;
-
-    Ok(())
 }

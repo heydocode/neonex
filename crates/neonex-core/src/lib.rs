@@ -3,10 +3,20 @@
 use core::marker::PhantomData;
 
 use bevy::{
-    app::{App, AppExit, PostStartup, Update}, ecs::{resource::Resource, system::{NonSendMut, ResMut}}, platform::prelude::{vec::Vec, String}, prelude::{Deref, DerefMut}
+    app::{App, AppExit, PostStartup, Update},
+    ecs::{
+        error,
+        resource::Resource,
+        system::{NonSendMut, ResMut},
+    },
+    platform::prelude::{String, vec::Vec},
+    prelude::{Deref, DerefMut},
 };
-use neonex_platform::{NeoNexConfig, NeoNexPlatform };
+use neonex_mockplatform::MockPlatform;
+use neonex_platform::{NeoNexConfig, NeoNexPlatform};
 use neonex_shared::{NeoNexStartupConfig, NeoNexStartupConfigSet};
+use neonex_terminal::{RatatuiContext, TerminalContext};
+use ratatui::prelude::Backend;
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "desktop")] {
@@ -34,13 +44,16 @@ impl NeoNexConfig for DefaultNeoNexConfig {
 }
 
 ///
-pub struct NeoNexInstance<CONFIG: NeoNexConfig> {
+pub struct NeoNexInstance<CONFIG: NeoNexConfig = DefaultNeoNexConfig> {
     pub _config: PhantomData<CONFIG>,
     pub app: App,
 }
 
 #[derive(Resource, Deref, DerefMut)]
-pub struct SCSWrapper<CONFIG: NeoNexConfig>(#[deref] pub NeoNexStartupConfigSet, pub PhantomData<CONFIG>);
+pub struct SCSWrapper<CONFIG: NeoNexConfig>(
+    #[deref] pub NeoNexStartupConfigSet,
+    pub PhantomData<CONFIG>,
+);
 
 impl<CONFIG: NeoNexConfig> From<NeoNexStartupConfigSet> for SCSWrapper<CONFIG> {
     fn from(value: NeoNexStartupConfigSet) -> Self {
@@ -57,7 +70,8 @@ impl<CONFIG: NeoNexConfig> Drop for SCSWrapper<CONFIG> {
 
 impl<CONFIG: NeoNexConfig> NeoNexInstance<CONFIG> {
     fn add_scs(mut scs: ResMut<SCSWrapper<CONFIG>>) {
-        scs.values.insert(NeoNexStartupConfig::Bla(String::from("BlaBlabllalalaa")));
+        scs.values
+            .insert(NeoNexStartupConfig::Bla(String::from("BlaBlabllalalaa")));
         scs.values.insert(NeoNexStartupConfig::Test1(19555));
     }
 
@@ -81,7 +95,8 @@ impl<CONFIG: NeoNexConfig> NeoNexInstance<CONFIG> {
 
     /// Isn't intended to be public: wrapper around internal bevy init
     fn setup_bevy(app: &mut App, startup_config_set: NeoNexStartupConfigSet) {
-        let _ = CONFIG::Platform::setup_bevy::<CONFIG>(app, startup_config_set);
+        CONFIG::Platform::setup_bevy::<CONFIG>(app, startup_config_set)
+            .expect("Unable to setup platform_specific bevy");
     }
 
     /// Runs the NeoNex runtime: Launches bevy ECS, inits the window/terminal, etc.
@@ -94,3 +109,9 @@ impl<CONFIG: NeoNexConfig> NeoNexInstance<CONFIG> {
 pub struct SSM {
     messages: Vec<String>,
 }
+
+/// Allow for easy Ctx access within bevy ECS while being default
+pub type DefaultRatatuiContext = RatatuiContext<
+    <ActivePlatform as NeoNexPlatform>::RatatuiContextGenerics,
+    <ActivePlatform as NeoNexPlatform>::RatatuiContextBackend,
+>;

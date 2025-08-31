@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd "$SCRIPT_DIR"
+
 # Default paths, but you can override by setting an env variable
 OVMF_CODE_FILE="${OVMF_CODE_FILE:-/usr/share/OVMF/OVMF_CODE_4M.fd}"
 OVMF_VARS_FILE="${OVMF_VARS_FILE:-/usr/share/OVMF/OVMF_VARS_4M.fd}"
@@ -16,7 +19,7 @@ mkdir -p esp/efi/boot
 cargo +nightly build -p uefi_example --target=x86_64-unknown-uefi --release
 
 # Copy the compiled EFI file
-cp target/x86_64-unknown-uefi/release/uefi_example.efi esp/efi/boot/bootx64.efi
+cp ../target/x86_64-unknown-uefi/release/uefi_example.efi esp/efi/boot/bootx64.efi
 
 # Start QEMU
 qemu-system-x86_64 \

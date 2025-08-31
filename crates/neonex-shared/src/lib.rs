@@ -20,7 +20,6 @@ pub struct NeoNexStartupConfigSet {
     pub values: HashSet<NeoNexStartupConfig>,
 }
 
-/// Variants of this enum may have different parameters, and types
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum NeoNexStartupConfig {
     NativeTerminal(bool),
@@ -29,7 +28,6 @@ pub enum NeoNexStartupConfig {
 }
 
 
-// Eq: only variant type matters
 impl PartialEq for NeoNexStartupConfig {
     fn eq(&self, other: &Self) -> bool {
         core::mem::discriminant(self) == core::mem::discriminant(other)
@@ -37,7 +35,6 @@ impl PartialEq for NeoNexStartupConfig {
 }
 impl Eq for NeoNexStartupConfig {}
 
-// Hash: only variant type matters
 impl Hash for NeoNexStartupConfig {
     fn hash<H: Hasher>(&self, state: &mut H) {
         core::mem::discriminant(self).hash(state);

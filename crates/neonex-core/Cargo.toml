@@ -25,3 +25,5 @@ neonex-uefi = { path = "../neonex-uefi", optional = true }
 neonex-embedded = { path = "../neonex-embedded", optional = true }
 neonex-mockplatform = { path = "../neonex-mockplatform" }
 neonex-shared = { path = "../neonex-shared" }
+neonex-terminal = { path = "../neonex-terminal" }
+ratatui = { version = "0.29.0", default-features = false }

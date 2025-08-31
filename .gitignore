@@ -1,7 +1,7 @@
 /target
+/examples/target
 /Cargo.lock
 /.history
-/OVMF_CODE_4M.fd
-/OVMF_VARS_4M.fd
-/esp
-/taplo.toml
+/examples/uefi_example/OVMF_CODE_4M.fd
+/examples/uefi_example/OVMF_VARS_4M.fd
+/examples/uefi_example/esp
