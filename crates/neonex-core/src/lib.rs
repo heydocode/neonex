@@ -50,7 +50,7 @@ pub struct NeoNexInstance<CONFIG: NeoNexConfig = DefaultNeoNexConfig> {
 }
 
 #[derive(Resource, Deref, DerefMut)]
-pub struct SCSWrapper<CONFIG: NeoNexConfig>(
+pub struct SCSWrapper<CONFIG: NeoNexConfig = DefaultNeoNexConfig>(
     #[deref] pub NeoNexStartupConfigSet,
     pub PhantomData<CONFIG>,
 );
@@ -68,6 +68,25 @@ impl<CONFIG: NeoNexConfig> Drop for SCSWrapper<CONFIG> {
     }
 }
 
+impl NeoNexInstance<DefaultNeoNexConfig> {
+    pub fn new() -> Self {
+        let mut app = App::new();
+
+        let startup_config_set = ActivePlatform::retrieve_startup_config();
+        // Insert the resource into bevy_ECS in order to modify it, and save the modified one into bevy when needed.
+        let resource: SCSWrapper = startup_config_set.clone().into();
+        app.insert_resource(resource);
+        app.add_systems(PostStartup, Self::add_scs);
+
+        Self::setup_bevy(&mut app, startup_config_set);
+
+        Self {
+            _config: PhantomData::<DefaultNeoNexConfig>,
+            app: app,
+        }
+    }
+}
+
 impl<CONFIG: NeoNexConfig> NeoNexInstance<CONFIG> {
     fn add_scs(mut scs: ResMut<SCSWrapper<CONFIG>>) {
         scs.values
@@ -76,7 +95,9 @@ impl<CONFIG: NeoNexConfig> NeoNexInstance<CONFIG> {
     }
 
     /// Inits a NeoNex Instance from a config struct.
-    pub fn new() -> Self {
+    /// A NeoNexConfig item should be present in the context, or specified manually:
+    /// let mut instance: NeoNexInstance<CustomNeoNexConfig> = NeoNexInstance::new_with_config();
+    pub fn new_with_config() -> Self {
         let mut app = App::new();
 
         let startup_config_set = ActivePlatform::retrieve_startup_config();

@@ -1979,20 +1979,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2a2330da5de22e8a3cb63252ce2abb30116bf5265e89c0e01bc17015ce30a476"
 
 [[package]]
-name = "dekstop_crossterm_example"
-version = "0.1.0"
-dependencies = [
- "agnostic_logic",
- "bevy",
- "neonex-core",
- "neonex-desktop",
- "neonex-platform",
- "neonex-shared",
- "neonex-terminal",
- "ratatui",
-]
-
-[[package]]
 name = "derive_more"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2011,6 +1997,20 @@ dependencies = [
  "quote",
  "syn",
  "unicode-xid",
+]
+
+[[package]]
+name = "desktop_crossterm_example"
+version = "0.1.0"
+dependencies = [
+ "agnostic_logic",
+ "bevy",
+ "neonex-core",
+ "neonex-desktop",
+ "neonex-platform",
+ "neonex-shared",
+ "neonex-terminal",
+ "ratatui",
 ]
 
 [[package]]

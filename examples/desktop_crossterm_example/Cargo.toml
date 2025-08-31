@@ -1,5 +1,5 @@
 [package]
-name = "dekstop_crossterm_example"
+name = "desktop_crossterm_example"
 version = "0.1.0"
 edition = "2024"
 
