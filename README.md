@@ -14,6 +14,16 @@ This flexibility is completely zero runtime overhead. In fact, `neonex_ecs` is a
 
 ## Roadmap upon the MVP stage
 
-- [ ] Implement `neonex_ecs`
-- [ ] Implement `neonex_core`  | Dependency of `neonex_ecs`
-- [ ] Implement `neonex_logic` | Dependency of `neonex_ecs` and `neonex_core`
+- [x] trait-based customizations (NeoNexInstance, NeoNexConfig)
+- [x] platform-specific configuration (NeoNexPlatform, DesktopPlatform, MobilePlatform, WebPlatform)
+- [ ] CCBS -> Connected to SCS save/retrieve/update mechanisms
+- [ ] SSM Full implementation
+- [ ] Minimal dynamic terminal support (fork/contribute to [bevy_ratatui](https://github.com/cxreiff/bevy_ratatui))
+- [ ] pluggable plugins (no priority, but trivial)
+- [x] Finish StartupConfigSet (SCS) implementations
+- [ ] Implement logic for `neonex-teminal`: ASCII art, animations, custom GUI, ...
+- [ ] Document everything in-code
+- [ ] Publish drafts, design documents, graphs
+- [ ] Implement Github CI and automate information sources (e.g. dependency graphs, with detailed feature-gates and targets)
+- [ ] Publish neonex lib with all of its descendents (e.g. neonex-core)
+- [ ] Web page about NeoNex
