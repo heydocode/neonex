@@ -1,0 +1,10 @@
+[workspace]
+members = [
+  "agnostic_logic", 
+  "desktop_crossterm_example",
+  "desktop_softatui_example",
+  "mobile_example",
+  "uefi_example", 
+  "web_example",
+]
+resolver = "3"

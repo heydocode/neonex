@@ -3,4 +3,28 @@ name = "neonex-terminal"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+# Native terminal; available only on Desktop
+native = []
+# Windowed terminal: wgpu renders a virtual terminal
+windowed = []
+# Hybrid setup: let choose between native and windowed terminals 
+# at runtime, just before running the bevy ECS
+hybrid = []
+# UEFI terminal: the only available terminal for the UEFI platform
+# (embedded-terminal works too but far less performant than the native uefi-terminal)
+uefi = []
+# Embedded terminal, many deployment conditions apply here. You can't do an application
+# that can work on all embedded devices, that's why the user will have an interface through
+# which configure a new embedded profile, but note that it's not stable and not meant to
+# be a first-party platform. In fact, it should just work (if you configure it well), with
+# a majority of NeoNex features, and it would just be useful to have NeoNex on a edge machine.
+# (NeoNex is an assistant, by putting it in an embedded low-power device, you can provide static code
+# to do stuff like a web server, a server monitor, etc.
+#
+# This is more as a future plan, and is not meant to be implemented before or just after the MVP
+embedded = []
+
 [dependencies]
+bevy = { version = "0.16.1", default-features = false }
+ratatui = { version = "0.29.0", default-features = false }

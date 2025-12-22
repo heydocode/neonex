@@ -1,14 +1,18 @@
 # Quick informations
 
-Now, a work-in-progress is made to accomplish the designed architecture in-code: pluggable [bevy](https://bevy.org/) plugins, Custom Command Behavior Set (CCBS), trait-based powerful but zero runtime overhead customization system, platform-specific configurations and preferences, Startup Configs, Startup Status Messages (SSM), ......... the list is long!
+NeoNex is an incredibly powerful and reusable piece of software, designed to be extended without changing its library source code.
+That's being said, you can litterally implement a new platform for NeoNex, without changing its source code, but implementing
+this support in your own workspace.
 
-The purpose of the project is to provide a futurist stylized virtual assistant, located in a terminal (native or virtual, to support mobile and web too). Even if the assistant aims to be AI-free and be especially useful for quick but powerful and performant automatizations, some plans in the future tend to include AIs in this project, so that they can create CCBS according to your wishes and build runtime (and so, unhappily less performant) automatizations, built in [Rhai](https://rhai.rs/), for all of its features, that would be useful for preemtible automatizations that would in theory be added with AIs.
+This flexibility is completely zero runtime overhead. In fact, `neonex_ecs` is a standalone crate, which offer a completely static, type driven plugin system, which is flexible enough to assemble plugins from external crates into one big ECS app. This ECS may appear limited at first, but as soon as you start using it, you quickly understand that you don't need to have more to create any piece of software. The ECS is alloc-free and no_std, expanding its platform compatibility. It doesn't make assumptions about hardware, but only about type systems, that gets optimized away into a performant loop.
 
-If you're curious about the project, you can DM me in discord (@heydo_code)
+`neonex_core` contains NeoNexInstance, Config and Platform: 3 ZSTs which statically contain information to change the behavior of NeoNex, switch its backends, run its loop, and even more, while having no runtime overhead due to configuring or allocation (everything is static and known by the compiler to make aggressive optimizations). This crate is standalone and can be used to create criss-platform and performant terminal apps, leveraging ratatui.
 
-If you want to contribute, that's not (yet) the right time: I have to build the basis of NeoNex before accepting any contributions: all of the systems mentioned in the first paragraph. It'll be short, and I'll surely do a showcase post in the [bevy's discord](https://discord.com/invite/bevy), as NeoNex is dependent on bevy and as NeoNex leverages new ideas into bevy, what could be interesting for other bevy users.
+`neonex_logic` contains the platform-agnostic logic of NeoNex. It can't be used as a standalone crate, because it relies on `neonex_core` for logic compile-time configuration, platform agnosticism (so use of Platform items, defined when initializing NeoNexInstance). Note that `neonex_logic` is dependent of `neonex_core`, but `neonex_core` is not a dependency of `neonex_logic`. The crate exposes the NeoNexLogic plugin, which, once imported in NeoNex ECS, requires `neonex_core` plugins to work correctly (ensured at compile-time).
 
-## Roadmap before the MVP stage
+`neonex_ecs` is a completely compile-time ECS, which main goal is to implement a compile-time plugin system, so that plugins can require each other and can access each other data.
+
+## Roadmap upon the MVP stage
 
 - [x] trait-based customizations (NeoNexInstance, NeoNexConfig)
 - [x] platform-specific configuration (NeoNexPlatform, DesktopPlatform, MobilePlatform, WebPlatform)

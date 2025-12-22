@@ -1,0 +1,21 @@
+[package]
+name = "web_example"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+soft_ratatui = { version = "0.0.8" }
+neonex-shared = { path = "../../crates/neonex-shared" }
+neonex-terminal = { path = "../../crates/neonex-terminal" }
+ratatui = { version = "0.29.0", default-features = false }
+bevy = { version = "0.16.1", default-features = false }
+neonex-core = { path = "../../crates/neonex-core", features = [
+  "web"
+] }
+neonex-platform = { path = "../../crates/neonex-platform" }
+agnostic_logic = { path = "../agnostic_logic" }
+
+[package.metadata]
+supported-targets = [
+    "wasm32-unknown-unknown"
+]

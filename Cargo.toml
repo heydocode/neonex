@@ -5,8 +5,29 @@ edition = "2024"
 
 [workspace]
 members = [
-    "crates/neonex-core", "crates/neonex-desktop", "crates/neonex-macros", "crates/neonex-mobile", "crates/neonex-platform", "crates/neonex-terminal", "crates/neonex-web",
+  "crates/neonex-core",
+  "crates/neonex-desktop",
+  "crates/neonex-embedded",
+  "crates/neonex-macros",
+  "crates/neonex-mobile",
+  "crates/neonex-mockplatform",
+  "crates/neonex-platform",
+  "crates/neonex-shared",
+  "crates/neonex-terminal",
+  "crates/neonex-uefi",
+  "crates/neonex-web", 
 ]
 
+[features]
+desktop = ["neonex-core/desktop"]
+mobile = ["neonex-core/mobile"]
+web = ["neonex-core/web"]
+uefi = ["neonex-core/uefi"]
+embedded = ["neonex-core/embedded"]
+
+desktop-hybrid-contexts = ["neonex-core/desktop-hybrid-contexts"]
+desktop-softatui-context = ["neonex-core/desktop-softatui-context"]
+desktop-crossterm-context = ["neonex-core/desktop-crossterm-context"]
+
 [dependencies]
-neonex-core ={ path = "crates/neonex-core"}
+neonex-core = { path = "crates/neonex-core" }
